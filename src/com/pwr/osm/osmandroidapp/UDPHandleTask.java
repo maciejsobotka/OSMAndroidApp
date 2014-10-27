@@ -18,16 +18,34 @@ import java.util.List;
 import android.os.AsyncTask;
 
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.PathOverlay;
 
 import pwr.osm.data.representation.MapPosition;
 
+/**
+ * Tworzy w¹tek asynchroniczny zajmuj¹cy siê ³¹czeniem z serwerem przez protokó³ UDP.
+ * 
+ * @author Sobot
+ */
 public class UDPHandleTask extends AsyncTask<Void, Void ,ArrayList<GeoPoint>>{
 	private ArrayList<MapPosition> pointsToServer;
 	private ArrayList<GeoPoint> pointsFromServer;
+	private PathOverlay path;
+	private MapView mapView;
 	
-	public UDPHandleTask(ArrayList<GeoPoint> userPoints)
+	/**
+	 * Konstruktor parametryczny.
+	 * @param mapView - Wyœwietlacz mapy.
+	 * @param path - Wyœwietlacz œcie¿ki.
+	 * @param userPoints - Punkty od u¿ytkownika aplikacji.
+	 */
+	public UDPHandleTask(MapView mapView, PathOverlay path, ArrayList<GeoPoint> userPoints)
 	{
-		MapPosition mP;		
+		this.mapView = mapView;
+		this.path = path;
+		
+		MapPosition mP;	
 		pointsToServer = new ArrayList<MapPosition>();
 		
 		for (GeoPoint gP : userPoints)
@@ -37,6 +55,13 @@ public class UDPHandleTask extends AsyncTask<Void, Void ,ArrayList<GeoPoint>>{
 		}
 	}
 	
+	/**
+	 * Przepisuje punkty u¿ytkownika aplikacji na odpowiedni¹ strukturê do przes³ania protoko³em.
+	 * Wysy³a DatagramPacket na serwer i odbiera odpowiedŸ.
+	 * Zwraca odpowiedŸ do onPostExecute.
+	 * 
+	 * Nale¿y sprawdziæ czy adres ip serwera jest poprawny!
+	 */
 	@Override
 	protected ArrayList<GeoPoint> doInBackground(Void... nothing) {
 		try
@@ -83,9 +108,17 @@ public class UDPHandleTask extends AsyncTask<Void, Void ,ArrayList<GeoPoint>>{
 		}    	
 		return pointsFromServer;
 	}
-	 
-	 protected void onPostExecute(ArrayList<GeoPoint> arrayList) {
-	 //po
-		 }
-	}
+	
+	/**
+	 * Rysuje sie¿kê ³¹cz¹c¹ punkty otrzymane od serwera i uaktualnia mapê.
+	 */
+	protected void onPostExecute(ArrayList<GeoPoint> pointsFromServer) {
+		for (GeoPoint gP : pointsFromServer)
+		{
+			path.addPoint(gP);
+		}
+		mapView.getOverlays().add(path);
+		mapView.invalidate();
+	 }
+}
 		 
