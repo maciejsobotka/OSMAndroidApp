@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-
+    
     <org.osmdroid.views.MapView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/mapview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:clickable="true" >      
+        android:clickable="true" >  
     </org.osmdroid.views.MapView>
 
-</LinearLayout>
+    <Button
+        android:id="@+id/find_path_button"
+        android:layout_width="102dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="2dp"
+        android:text="@string/find_path_button" />
+
+    <Button
+        android:id="@+id/clear_button"
+        android:layout_width="102dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="40dp"
+        android:text="@string/clear_button" />
+   
+</RelativeLayout>

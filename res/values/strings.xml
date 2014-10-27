@@ -4,5 +4,7 @@
     <string name="app_name">OSMAndroidApp</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="find_path_button">Find Path</string>
+    <string name="clear_button">Clear</string>
 
 </resources>
