@@ -10,8 +10,6 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +22,7 @@ import org.osmdroid.views.overlay.PathOverlay;
 import pwr.osm.data.representation.MapPosition;
 
 /**
- * Tworzy w¹tek asynchroniczny zajmuj¹cy siê ³¹czeniem z serwerem przez protokó³ UDP.
+ * Tworzy watek asynchroniczny zajmujÄ…cy siÄ™ Å‚Ä…czeniem z serwerem przez protokÅ‚ UDP.
  * 
  * @author Sobot
  */
@@ -36,9 +34,9 @@ public class UDPHandleTask extends AsyncTask<Void, Void ,ArrayList<GeoPoint>>{
 	
 	/**
 	 * Konstruktor parametryczny.
-	 * @param mapView - Wyœwietlacz mapy.
-	 * @param path - Wyœwietlacz œcie¿ki.
-	 * @param userPoints - Punkty od u¿ytkownika aplikacji.
+	 * @param mapView - WyÅ›wietlacz mapy.
+	 * @param path - WyÅ›wietlacz Å›cieÅ¼ki.
+	 * @param userPoints - Punkty od uÅ¼ytkownika aplikacji.
 	 */
 	public UDPHandleTask(MapView mapView, PathOverlay path, ArrayList<GeoPoint> userPoints)
 	{
@@ -56,11 +54,11 @@ public class UDPHandleTask extends AsyncTask<Void, Void ,ArrayList<GeoPoint>>{
 	}
 	
 	/**
-	 * Przepisuje punkty u¿ytkownika aplikacji na odpowiedni¹ strukturê do przes³ania protoko³em.
-	 * Wysy³a DatagramPacket na serwer i odbiera odpowiedŸ.
-	 * Zwraca odpowiedŸ do onPostExecute.
+	 * Przepisuje punkty uÅ¼ytkownika aplikacji na odpowiedniÄ… strukturÄ™ do przesÅ‚ania protokoÅ‚em.
+	 * WysyÅ‚a DatagramPacket na serwer i odbiera odpowiedÅº.
+	 * Zwraca odpowiedÅº do onPostExecute.
 	 * 
-	 * Nale¿y sprawdziæ czy adres ip serwera jest poprawny!
+	 * NaleÅ¼y sprawdziÄ‡ czy adres ip serwera jest poprawny!
 	 */
 	@Override
 	protected ArrayList<GeoPoint> doInBackground(Void... nothing) {
@@ -95,22 +93,16 @@ public class UDPHandleTask extends AsyncTask<Void, Void ,ArrayList<GeoPoint>>{
 		    	GeoPoint x = new GeoPoint(mP.getLatitude(),mP.getLongitude());
 		    	pointsFromServer.add(x); 
 		    }
-		
-		}
-		catch (SocketException e) {
-	    e.printStackTrace();
-		}catch (UnknownHostException e) {
-	    e.printStackTrace();
 		} catch (IOException e) {
-	    e.printStackTrace();
-		} catch (Exception e) {
-	    e.printStackTrace();
-		}    	
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 		return pointsFromServer;
 	}
 	
 	/**
-	 * Rysuje sie¿kê ³¹cz¹c¹ punkty otrzymane od serwera i uaktualnia mapê.
+	 * Rysuje sieÅ¼kÄ™  Å‚Ä…czÄ…cÄ… punkty otrzymane od serwera i uaktualnia mapÄ™.
 	 */
 	protected void onPostExecute(ArrayList<GeoPoint> pointsFromServer) {
 		for (GeoPoint gP : pointsFromServer)

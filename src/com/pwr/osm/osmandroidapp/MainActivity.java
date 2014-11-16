@@ -4,14 +4,18 @@ import com.pwr.osm.osmandroidapp.R;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 
 import org.osmdroid.bonuspack.overlays.Marker;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -23,11 +27,11 @@ import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.PathOverlay;
 
 /**
- * G³ówna aktywnoœæ aplikacji.
- * Wyœwietla mapê z Open Street Maps.
- * Pozwala na stawianie Markerów za pomoc¹ pojedyñczych tapniêæ.
- * Posiada przycisk do wys³ania punktów na serwer oraz
- * przycisk do usuniêcia punktów.
+ * GÅ‚Ã³wna aktywnoÅ›Ä‡ aplikacji.
+ * WyÅ›wietla mapÄ™ z Open Street Maps.
+ * Pozwala na stawianie MarkerÃ³w za pomocÄ… pojedyÅ„czych tapniÄ™Ä‡.
+ * Posiada przycisk do wysÅ‚ania punktÃ³w na serwer oraz
+ * przycisk do usuniÄ™cia punktÃ³w.
  * 
  * @author Sobot
  *
@@ -39,8 +43,19 @@ public class MainActivity extends Activity {
 	private ArrayList<GeoPoint> pointsUser = new ArrayList<GeoPoint>();
 	private ArrayList<Marker> markers = new ArrayList<Marker>(); 
 	
+    /**
+     * Sprawdza czy jest poÅ‚Ä…czenie z internetem.
+     * @return tak jeÅ¼eli jest internet.
+     */
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager
+                .getActiveNetworkInfo();
+        return activeNetworkInfo != null;
+    }
+    
 	/** 
-	 * Inicjalizuje mapê i ustawia jej œrodek na centrum Wroc³awia.
+	 * Inicjalizuje mapÄ™ i ustawia jej Å›rodek na centrum WrocÅ‚awia.
 	 */
 	private void initMap() {
     	mapView = (MapView) findViewById(R.id.mapview);
@@ -54,7 +69,7 @@ public class MainActivity extends Activity {
     }
     
 	/**
-	 * Ustawia odpowiednie layouty oraz elementy potrzebne do obs³ugi mapy.
+	 * Ustawia odpowiednie layouty oraz elementy potrzebne do obsÅ‚ugi mapy.
 	 */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,9 +90,21 @@ public class MainActivity extends Activity {
 	            marker.setPosition(tapLocation);
 	            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 	            marker.setTitle("Lat: " + tapLocation.getLatitude() + "\nLong: " + tapLocation.getLongitude());
-	            markers.add(marker);
-	            mapView.getOverlays().add(marker);
-                mapView.invalidate();
+	            if (markers.size() != 2){
+		            markers.add(marker);
+		            mapView.getOverlays().add(marker);
+	            }
+	            else{
+	            	Marker tempMarker = markers.get(1);
+	            	mapView.getOverlays().removeAll(markers);
+	            	for(Marker m : markers)
+	            		m.hideInfoWindow();
+	            	markers.clear();
+	            	markers.add(tempMarker);
+	            	markers.add(marker);
+		            mapView.getOverlays().addAll(markers);
+	            }
+	                mapView.invalidate();
 	              
 	            return true;
 	        }
@@ -96,25 +123,46 @@ public class MainActivity extends Activity {
 		findPathButton.setOnClickListener(new OnClickListener()
         {
 		    /**
-		     * Wysy³a punkty na serwer.
-		     * Odbiera odpowiedŸ zwrotn¹ i wyœwietla œcie¿kê.
+		     * WysyÅ‚a punkty na serwer.
+		     * Odbiera odpowiedÅº zwrotnÄ… i wyÅ›wietla Å›cieÅ¼kÄ™.
 		     */
             @Override
             public void onClick(View v) {
-            	UDPHandleTask udpSender = new UDPHandleTask(mapView, path, pointsUser);
-            	udpSender.execute();
+            	if (markers.size() == 2)
+	            	if (isNetworkAvailable()){
+		            	UDPHandleTask udpSender = new UDPHandleTask(mapView, path, pointsUser);
+		            	udpSender.execute();
+	            	}
+	            	else{
+	            		Context context = getApplicationContext();
+	            		CharSequence text = "Brak poÅ‚Ä…czenia z internetem!";
+	            		int duration = Toast.LENGTH_SHORT;
+	
+	            		Toast toast = Toast.makeText(context, text, duration);
+	            		toast.show();
+	            	}
+            	else{
+            		Context context = getApplicationContext();
+            		CharSequence text = "Potrzebne sÄ… dwa punkty.";
+            		int duration = Toast.LENGTH_SHORT;
+
+            		Toast toast = Toast.makeText(context, text, duration);
+            		toast.show();
+            	}
              }           
         });
 		
         clearButton.setOnClickListener(new OnClickListener()
         {
 		    /**
-		     * Usuwa wszystkie markery, punkty z nimi zwi¹zane oraz œcie¿ki.
+		     * Usuwa wszystkie markery, punkty z nimi zwiÄ…zane oraz  Å›cieÅ¼ki.
 		     */
             @Override
             public void onClick(View v) {    
             	mapView.getOverlays().removeAll(markers);
             	mapView.getOverlays().remove(path);
+            	for(Marker m : markers)
+            		m.hideInfoWindow();
             	markers.clear();
             	path.clearPath();
             	pointsUser.clear();
@@ -125,7 +173,7 @@ public class MainActivity extends Activity {
     }
     
     /**
-     * Wy³¹cza aplikacjê po wciœniêciu przycisku BACK na telefonie.
+     * WyÅ‚Ä…cza aplikacjÄ™ po wciÅ›niÄ™ciu przycisku BACK na telefonie.
      */
     @Override
     public void onBackPressed() {
